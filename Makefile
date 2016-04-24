@@ -5,7 +5,7 @@
 # http://stackoverflow.com/questions/1803628/raw-list-of-person-names
 # references census data url's for names
 
-all: census_data
+all: census_data lastNames
 
 census_data: dist.all.last dist.female.first dist.mail.first
 
@@ -17,3 +17,7 @@ dist.female.first:
 
 dist.mail.first:
 	curl -sL http://www2.census.gov/topics/genealogy/1990surnames/dist.male.first -o $@
+
+lastNames: dist.all.last
+	awk '{ print $$1 }' $^ >$@.orig
+	awk '{ len = length( $$1 ) - 2; last = substr( $$1, 1, len); printf "%sZQ\n", last; }' $^ >$@
