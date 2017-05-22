@@ -27,3 +27,10 @@ func GenerateInvalidSSN(r *rand.Rand) string {
 		return "000-00-0000"
 	}
 }
+
+func GenerateSSN(r *rand.Rand) string {
+	return fmt.Sprintf("%03d-%02d-%04d",
+		r.Int31n(998) + 1,
+		r.Int31n(98) + 1,
+		r.Int31n(9998) + 1 )
+}

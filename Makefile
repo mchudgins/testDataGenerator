@@ -15,9 +15,16 @@ dist.all.last:
 dist.female.first:
 	curl -sL http://www2.census.gov/topics/genealogy/1990surnames/dist.female.first -o $@
 
-dist.mail.first:
+dist.male.first:
 	curl -sL http://www2.census.gov/topics/genealogy/1990surnames/dist.male.first -o $@
 
 lastNames: dist.all.last
 	awk '{ print $$1 }' $^ >$@.orig
 	awk '{ len = length( $$1 ) - 2; last = substr( $$1, 1, len); printf "%sZQ\n", last; }' $^ >$@
+
+femaleNames: dist.female.first
+	awk '{ print $$1 }' $^ >$@
+
+maleNames: dist.male.first
+	awk '{ print $$1 }' $^ >$@
+

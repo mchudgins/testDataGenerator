@@ -1,3 +1,6 @@
 .idea
 dist.*
 lastNames*
+femaleNames
+maleNames
+test.dat
