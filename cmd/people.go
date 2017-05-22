@@ -65,12 +65,17 @@ var (
 	femaleNames []string
 	lastNames   []string
 	maleNames   []string
+	ssnList     map[string]bool
+	ssnLock     sync.Mutex
+	dupes       int
 )
 
 func init() {
 	RootCmd.AddCommand(peopleCmd)
 
 	var err error
+
+	ssnList = make(map[string]bool)
 
 	lastNames, err = loadNames("lastNames.orig")
 	if err != nil {
@@ -117,9 +122,19 @@ func genRandomPerson(r *rand.Rand) user {
 
 	u.LastName = selectLastName(r)
 	u.FirstName = selectFirstName(r)
-	u.SSN = ssn.GenerateSSN(r)
 
-	return u
+	for {
+		u.SSN = ssn.GenerateSSN(r)
+
+		ssnLock.Lock()
+		if _, ok := ssnList[u.SSN]; !ok {
+			ssnList[u.SSN] = true
+			ssnLock.Unlock()
+			return u
+		}
+		dupes++
+		ssnLock.Unlock()
+	}
 }
 
 func genPeople(count int, ch chan user, wg *sync.WaitGroup) {
@@ -138,7 +153,7 @@ func people(count int) {
 	var u user
 	var wg sync.WaitGroup
 
-	users := make(chan user)
+	users := make(chan user, 10000)
 
 	wg.Add(generators)
 	go func() {
@@ -153,4 +168,6 @@ func people(count int) {
 	for u = range users {
 		fmt.Printf("%s, %s, %s\n", u.LastName, u.FirstName, u.SSN)
 	}
+
+	fmt.Fprintf(os.Stderr, "%d dupes\n", dupes)
 }
